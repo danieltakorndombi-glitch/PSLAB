@@ -58,7 +58,7 @@
             <span>Charger un jeu</span>
           </button>
           <button id="btn-show-gamepad" class="action-btn">
-            <span class="action-icon">🎮</span>
+            <span class="action-icon" style="display:inline-flex;width:22px"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6.5h10a5.2 5.2 0 0 1 5 4.1l.9 5a2.7 2.7 0 0 1-4.6 2.3L16.4 15.5H7.6l-2.9 2.4A2.7 2.7 0 0 1 .1 15.6l.9-5a5.2 5.2 0 0 1 5-4.1Zm.4 2.6v1.4H6v1.6h1.4V13H9v-1.4h1.4v-1.6H9V9.1H7.4Zm8.8.2a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Zm2.4 2.2a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z"/></svg></span>
             <span>Manette</span>
           </button>
         </div>
@@ -162,58 +162,29 @@
       </section>
     </main>
 
-    <!-- Virtual Gamepad (always available, toggled) -->
+    <!-- Manette plein écran (vrais boutons, repositionnables) -->
     <div id="gamepad" class="gamepad hidden">
-      <!-- Left side: D-pad + Left stick -->
-      <div class="gp-left">
-        <div class="stick-zone" id="stick-left">
-          <div class="stick-base">
-            <div class="stick-knob" id="knob-left"></div>
-          </div>
-          <span class="stick-label">L</span>
-        </div>
-        <div class="dpad" id="dpad">
-          <button class="dpad-btn up" data-btn="up">▲</button>
-          <button class="dpad-btn left" data-btn="left">◀</button>
-          <button class="dpad-btn right" data-btn="right">▶</button>
-          <button class="dpad-btn down" data-btn="down">▼</button>
-        </div>
+      <div class="gp-bar">
+        <button class="gp-tool" id="gp-edit">Ajuster</button>
+        <input type="range" class="gp-size" id="gp-size" min="0.6" max="1.6" step="0.05" value="1" aria-label="Taille du bouton" />
+        <button class="gp-tool" id="gp-reset">Réinitialiser</button>
+        <button class="gp-tool" id="gp-close">Masquer</button>
       </div>
-
-      <!-- Center buttons -->
-      <div class="gp-center">
-        <button class="sys-btn" data-btn="share">Share</button>
-        <button class="sys-btn" data-btn="options">Options</button>
-        <button class="sys-btn home" data-btn="home">PS</button>
+      <div class="ctl" data-ctl="l2"><button class="key shoulder" data-btn="l2">L2</button></div><div class="ctl" data-ctl="l1"><button class="key shoulder" data-btn="l1">L1</button></div><div class="ctl" data-ctl="r1"><button class="key shoulder" data-btn="r1">R1</button></div><div class="ctl" data-ctl="r2"><button class="key shoulder" data-btn="r2">R2</button></div>
+      <div class="ctl dpad" data-ctl="dpad"><button class="key up" data-btn="up"><svg viewBox="0 0 24 24"><path d="M12 5 20 18H4Z"/></svg></button><button class="key left" data-btn="left"><svg viewBox="0 0 24 24"><path d="M12 5 20 18H4Z"/></svg></button><button class="key right" data-btn="right"><svg viewBox="0 0 24 24"><path d="M12 5 20 18H4Z"/></svg></button><button class="key down" data-btn="down"><svg viewBox="0 0 24 24"><path d="M12 5 20 18H4Z"/></svg></button></div>
+      <div class="ctl face" data-ctl="face">
+        <button class="key triangle" data-btn="triangle"><svg viewBox="0 0 24 24" stroke="#33d6a6"><path d="M12 4.5 20.5 19h-17Z"/></svg></button>
+        <button class="key square" data-btn="square"><svg viewBox="0 0 24 24" stroke="#ff7ad9"><rect x="5.5" y="5.5" width="13" height="13" rx="1"/></svg></button>
+        <button class="key circle" data-btn="circle"><svg viewBox="0 0 24 24" stroke="#ff4d5e"><circle cx="12" cy="12" r="7.5"/></svg></button>
+        <button class="key cross" data-btn="cross"><svg viewBox="0 0 24 24" stroke="#5b9cff"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
       </div>
-
-      <!-- Right side: Face buttons + Right stick -->
-      <div class="gp-right">
-        <div class="face-btns">
-          <button class="face-btn triangle" data-btn="triangle">△</button>
-          <button class="face-btn circle" data-btn="circle">○</button>
-          <button class="face-btn cross" data-btn="cross">×</button>
-          <button class="face-btn square" data-btn="square">□</button>
-        </div>
-        <div class="stick-zone" id="stick-right">
-          <div class="stick-base">
-            <div class="stick-knob" id="knob-right"></div>
-          </div>
-          <span class="stick-label">R</span>
-        </div>
-      </div>
-
-      <!-- Shoulder buttons -->
-      <div class="shoulders">
-        <button class="shoulder l2" data-btn="l2">L2</button>
-        <button class="shoulder l1" data-btn="l1">L1</button>
-        <button class="shoulder r1" data-btn="r1">R1</button>
-        <button class="shoulder r2" data-btn="r2">R2</button>
-      </div>
+      <div class="ctl stick" id="stick-left" data-ctl="stick-left"><div class="knob" id="knob-left"></div></div>
+      <div class="ctl stick" id="stick-right" data-ctl="stick-right"><div class="knob" id="knob-right"></div></div>
+      <div class="ctl" data-ctl="share"><button class="key sys" data-btn="share">Share</button></div><div class="ctl" data-ctl="home"><button class="key sys home" data-btn="home">PS</button></div><div class="ctl" data-ctl="options"><button class="key sys" data-btn="options">Options</button></div>
     </div>
 
-    <!-- Floating toggle for gamepad -->
-    <button id="toggle-gamepad" class="fab" title="Afficher/Masquer manette">🎮</button>
+    <!-- Vrai bouton rond pour ouvrir la manette -->
+    <button id="toggle-gamepad" class="fab" title="Manette" aria-label="Manette"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6.5h10a5.2 5.2 0 0 1 5 4.1l.9 5a2.7 2.7 0 0 1-4.6 2.3L16.4 15.5H7.6l-2.9 2.4A2.7 2.7 0 0 1 .1 15.6l.9-5a5.2 5.2 0 0 1 5-4.1Zm.4 2.6v1.4H6v1.6h1.4V13H9v-1.4h1.4v-1.6H9V9.1H7.4Zm8.8.2a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Zm2.4 2.2a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z"/></svg></button>
   </div>
 
   <!-- Toast notifications -->

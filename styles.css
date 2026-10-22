@@ -474,238 +474,66 @@ html, body {
   display: none;
 }
 
-/* ========== VIRTUAL GAMEPAD ========== */
-.gamepad {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 280px;
-  background: linear-gradient(to top, #0d0d14 80%, transparent);
-  padding: 12px 8px calc(12px + var(--safe-bottom));
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  z-index: 100;
-  pointer-events: none;
-}
+/* ========== MANETTE (vrais boutons 3D) ========== */
+.gamepad { position: fixed; inset: 0; z-index: 60; pointer-events: none; touch-action: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.gamepad.editing { pointer-events: auto; background-color: rgba(5,5,12,.6);
+  background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 40px 40px; }
+.ctl { position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%);
+  transform: translate(-50%, -50%) scale(var(--s, 1)); pointer-events: auto; touch-action: none; }
+.gamepad.editing .ctl { outline: 2px dashed rgba(0,160,255,.9); outline-offset: 6px; border-radius: 14px; }
+.gamepad.editing .ctl.sel { outline: 2px solid #ffd54a; }
+.gamepad.editing .ctl * { pointer-events: none; }
 
-.gamepad > * {
-  pointer-events: auto;
-}
+.key { position: relative; border: 0; padding: 0; color: #e9ecf5; display: flex; align-items: center; justify-content: center;
+  font: 700 15px/1 -apple-system, system-ui, sans-serif; touch-action: none; -webkit-tap-highlight-color: transparent;
+  background: radial-gradient(circle at 35% 22%, #5d6277 0, #35394c 45%, #1b1d2a 100%);
+  box-shadow: 0 5px 0 #0a0b12, 0 9px 12px rgba(0,0,0,.55), inset 0 1px 1px rgba(255,255,255,.4), inset 0 -2px 4px rgba(0,0,0,.5);
+  transition: transform .05s, box-shadow .05s, filter .05s; }
+.key.active { transform: translateY(4px); filter: brightness(1.3);
+  box-shadow: 0 1px 0 #0a0b12, 0 2px 4px rgba(0,0,0,.6), inset 0 2px 6px rgba(0,0,0,.6); }
+.shoulder { width: 84px; height: 42px; border-radius: 14px 14px 8px 8px; letter-spacing: 1px; }
+.sys { width: 68px; height: 30px; border-radius: 15px; font-size: 11px; }
+.sys.home { background: radial-gradient(circle at 35% 22%, #2d8cff, #0070d1 55%, #003f80); }
 
-.gp-left, .gp-right {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  width: 42%;
-}
+.face { width: 124px; height: 124px; }
+.face .key { position: absolute; width: 50px; height: 50px; border-radius: 50%; }
+.face .triangle { left: 37px; top: 0; } .face .square { left: 0; top: 37px; }
+.face .circle { right: 0; top: 37px; } .face .cross { left: 37px; bottom: 0; }
+.face svg { width: 26px; height: 26px; fill: none; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 
-.gp-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-}
+.dpad { width: 132px; height: 132px; }
+.dpad::before { content: ""; position: absolute; left: 44px; top: 44px; width: 44px; height: 44px; background: #14151f; border-radius: 6px; }
+.dpad .key { position: absolute; width: 44px; height: 44px; border-radius: 10px; }
+.dpad .up { left: 44px; top: 0; } .dpad .left { left: 0; top: 44px; }
+.dpad .right { right: 0; top: 44px; } .dpad .down { left: 44px; bottom: 0; }
+.dpad svg { width: 20px; height: 20px; fill: #d7dbea; }
+.dpad .left svg { transform: rotate(-90deg); } .dpad .right svg { transform: rotate(90deg); } .dpad .down svg { transform: rotate(180deg); }
 
-/* Sticks */
-.stick-zone {
-  position: relative;
-  width: 110px;
-  height: 110px;
-}
+.stick { width: 104px; height: 104px; border-radius: 50%;
+  background: radial-gradient(circle, #0d0e16 55%, #1f2233 100%);
+  box-shadow: inset 0 4px 10px rgba(0,0,0,.8), 0 0 0 3px #2c3042, 0 6px 10px rgba(0,0,0,.5); }
+.stick .knob { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 35% 22%, #70758d, #2b2e40 60%, #161824);
+  box-shadow: 0 4px 0 #090a10, 0 7px 10px rgba(0,0,0,.6), inset 0 1px 1px rgba(255,255,255,.4); }
+.stick .knob.active { filter: brightness(1.35); }
 
-.stick-base {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: rgba(40, 40, 55, 0.9);
-  border: 2px solid #333;
-  position: relative;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-}
+.gp-bar { position: absolute; top: calc(8px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%);
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; max-width: 94%; pointer-events: auto; z-index: 2; }
+.gp-tool { border: 0; border-radius: 999px; padding: 9px 14px; color: #e9ecf5; background: rgba(30,32,46,.95);
+  font: 600 13px -apple-system, system-ui, sans-serif; box-shadow: 0 3px 0 #0a0b12, inset 0 1px 1px rgba(255,255,255,.25); }
+.gp-tool:active { transform: translateY(2px); box-shadow: 0 1px 0 #0a0b12; background: var(--accent); }
+.gp-size { display: none; width: 110px; }
+.gamepad.editing .gp-size { display: block; }
 
-.stick-knob {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #3a3a4a, #222230);
-  border: 2px solid #555;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-  transition: box-shadow 0.1s;
-}
-
-.stick-knob.active {
-  box-shadow: 0 0 16px var(--accent-glow);
-  border-color: var(--accent);
-}
-
-.stick-label {
-  position: absolute;
-  bottom: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* D-pad */
-.dpad {
-  position: relative;
-  width: 100px;
-  height: 100px;
-}
-
-.dpad-btn {
-  position: absolute;
-  width: 34px;
-  height: 34px;
-  background: rgba(50, 50, 65, 0.95);
-  border: 1px solid #444;
-  border-radius: 6px;
-  color: #ccc;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.dpad-btn.up    { top: 0; left: 33px; }
-.dpad-btn.down  { bottom: 0; left: 33px; }
-.dpad-btn.left  { left: 0; top: 33px; }
-.dpad-btn.right { right: 0; top: 33px; }
-
-.dpad-btn:active,
-.dpad-btn.active {
-  background: var(--accent);
-  color: white;
-}
-
-/* Face buttons */
-.face-btns {
-  position: relative;
-  width: 110px;
-  height: 110px;
-}
-
-.face-btn {
-  position: absolute;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 2px solid #444;
-  background: rgba(50, 50, 65, 0.95);
-  color: #ddd;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.face-btn.triangle { top: 0; left: 34px; color: #00c853; }
-.face-btn.circle   { top: 34px; right: 0; color: #ff3b5c; }
-.face-btn.cross    { bottom: 0; left: 34px; color: #42a5f5; }
-.face-btn.square   { top: 34px; left: 0; color: #e040fb; }
-
-.face-btn:active,
-.face-btn.active {
-  transform: scale(0.92);
-  box-shadow: 0 0 12px currentColor;
-}
-
-/* System buttons */
-.sys-btn {
-  padding: 6px 14px;
-  font-size: 11px;
-  background: rgba(40,40,55,0.9);
-  border: 1px solid #444;
-  border-radius: 20px;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.sys-btn.home {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  padding: 0;
-  font-weight: 700;
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.sys-btn:active {
-  background: var(--accent);
-  color: white;
-}
-
-/* Shoulders */
-.shoulders {
-  position: absolute;
-  top: 8px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 12px;
-  pointer-events: none;
-}
-
-.shoulder {
-  pointer-events: auto;
-  padding: 10px 22px;
-  background: rgba(40,40,55,0.95);
-  border: 1px solid #444;
-  border-radius: 8px;
-  color: #ccc;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.shoulder:active,
-.shoulder.active {
-  background: var(--accent);
-  color: white;
-}
-
-/* FAB */
-.fab {
-  position: fixed;
-  bottom: calc(20px + var(--safe-bottom));
-  right: 16px;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: none;
-  color: white;
-  font-size: 24px;
-  box-shadow: 0 4px 20px rgba(0, 112, 209, 0.5);
-  z-index: 90;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fab:active {
-  transform: scale(0.92);
-}
-
-/* When gamepad is visible, move FAB up */
-.gamepad:not(.hidden) ~ .fab {
-  bottom: calc(300px + var(--safe-bottom));
-}
+.fab { position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom)); z-index: 70; width: 60px; height: 60px; border: 0;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; -webkit-tap-highlight-color: transparent;
+  background: radial-gradient(circle at 35% 22%, #2d8cff, #0070d1 55%, #003f80);
+  box-shadow: 0 6px 0 #002a57, 0 10px 16px rgba(0,0,0,.55), inset 0 1px 2px rgba(255,255,255,.5); }
+.fab svg { width: 30px; height: 30px; }
+.fab:active { transform: translateY(4px); box-shadow: 0 2px 0 #002a57, 0 3px 6px rgba(0,0,0,.5), inset 0 2px 6px rgba(0,0,0,.4); }
+.gamepad:not(.hidden) ~ .fab { display: none; }
 
 /* Toast */
 .toast {
@@ -728,17 +556,3 @@ html, body {
 .toast.success { border-color: var(--success); }
 .toast.error   { border-color: var(--danger); }
 
-/* ========== RESPONSIVE tweaks ========== */
-@media (min-width: 500px) {
-  .gamepad {
-    height: 300px;
-  }
-  .stick-zone {
-    width: 130px;
-    height: 130px;
-  }
-  .stick-knob {
-    width: 56px;
-    height: 56px;
-  }
-}
