@@ -11,9 +11,10 @@
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
 
-  <link rel="stylesheet" href="css/styles.css" />
+  <!-- Lien corrigé vers le CSS à la racine -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <!-- ========== BOOT / LOADING SCREEN ========== -->
@@ -190,10 +191,10 @@
   <!-- Toast notifications -->
   <div id="toast" class="toast hidden"></div>
 
-  <script src="js/core-interface.js"></script>
-  <script src="js/gamepad.js"></script>
-  <script src="js/file-loader.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Liens JS corrigés vers la racine -->
+  <script src="core-interface.js"></script>
+  <script src="gamepad.js"></script>
+  <script src="file-loader.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
