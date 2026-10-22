@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <meta name="description" content="Prototype d'émulateur PlayStation (PS2/PS4) optimisé iOS – interface prête pour un vrai moteur WASM" />
+  <title>PS Web Emulator</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- ========== BOOT / LOADING SCREEN ========== -->
+  <div id="boot-screen" class="boot-screen">
+    <div class="boot-logo">
+      <div class="ps-symbol">▶</div>
+      <h1>PLAYSTATION</h1>
+      <p class="boot-subtitle">Web Emulator Prototype</p>
+    </div>
+    <div class="boot-progress">
+      <div class="boot-bar" id="boot-bar"></div>
+    </div>
+    <p class="boot-status" id="boot-status">Initialisation…</p>
+  </div>
+
+  <!-- ========== MAIN APP ========== -->
+  <div id="app" class="app hidden">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <span class="ps-logo">▶</span>
+        <span class="header-title">PS Web</span>
+      </div>
+      <div class="header-right">
+        <button id="btn-library" class="icon-btn" title="Bibliothèque">☰</button>
+        <button id="btn-settings" class="icon-btn" title="Paramètres">⚙</button>
+      </div>
+    </header>
+
+    <!-- Main content area -->
+    <main class="main">
+      <!-- Dashboard / Home -->
+      <section id="view-home" class="view active">
+        <div class="welcome">
+          <h2>Bienvenue</h2>
+          <p>Prototype d’interface prêt pour un vrai moteur d’émulation.</p>
+        </div>
+
+        <div class="quick-actions">
+          <button id="btn-load-rom" class="action-btn primary">
+            <span class="action-icon">📁</span>
+            <span>Charger un jeu</span>
+          </button>
+          <button id="btn-show-gamepad" class="action-btn">
+            <span class="action-icon">🎮</span>
+            <span>Manette</span>
+          </button>
+        </div>
+
+        <!-- Performance monitor (simulated) -->
+        <div class="perf-panel">
+          <h3>Performances (simulées)</h3>
+          <div class="perf-grid">
+            <div class="perf-item"><span>FPS</span><strong id="stat-fps">60</strong></div>
+            <div class="perf-item"><span>CPU</span><strong id="stat-cpu">12%</strong></div>
+            <div class="perf-item"><span>RAM</span><strong id="stat-ram">48 MB</strong></div>
+            <div class="perf-item"><span>VRAM</span><strong id="stat-vram">32 MB</strong></div>
+          </div>
+          <p class="perf-note">Ces valeurs sont fictives. Elles seront reliées au vrai moteur plus tard.</p>
+        </div>
+
+        <!-- Recent / Sample games -->
+        <div class="library-section">
+          <h3>Jeux de démonstration</h3>
+          <div class="game-grid" id="sample-games">
+            <!-- filled by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Library view -->
+      <section id="view-library" class="view">
+        <h2>Bibliothèque</h2>
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-content">
+            <span class="drop-icon">📦</span>
+            <p>Glisse un fichier ISO / BIN / CHD / PKG ici</p>
+            <p class="drop-hint">ou clique pour sélectionner</p>
+            <input type="file" id="file-input" accept=".iso,.bin,.chd,.pkg,.cso,.img" multiple hidden />
+          </div>
+        </div>
+        <div class="loaded-games" id="loaded-games">
+          <p class="empty-msg">Aucun jeu chargé pour le moment.</p>
+        </div>
+      </section>
+
+      <!-- Settings view -->
+      <section id="view-settings" class="view">
+        <h2>Paramètres</h2>
+        <div class="settings-group">
+          <label>Échelle de résolution</label>
+          <select id="setting-scale">
+            <option value="1">1× (Native)</option>
+            <option value="2" selected>2×</option>
+            <option value="3">3×</option>
+            <option value="4">4× (4K simulé)</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label>Frame Skip</label>
+          <select id="setting-frameskip">
+            <option value="0" selected>Désactivé</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label>Filtres vidéo</label>
+          <select id="setting-filter">
+            <option value="none" selected>Aucun</option>
+            <option value="crt">CRT Scanlines</option>
+            <option value="smooth">Bilinear</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label>Sensibilité sticks</label>
+          <input type="range" id="setting-sensitivity" min="0.5" max="2" step="0.1" value="1" />
+        </div>
+        <div class="settings-group">
+          <label>
+            <input type="checkbox" id="setting-haptic" checked />
+            Retour haptique (vibration)
+          </label>
+        </div>
+        <div class="settings-group">
+          <label>
+            <input type="checkbox" id="setting-show-fps" checked />
+            Afficher FPS
+          </label>
+        </div>
+        <p class="settings-note">
+          Ces réglages seront transmis au vrai moteur d’émulation quand il sera branché.
+        </p>
+      </section>
+
+      <!-- Emulation / Game view (placeholder for real core) -->
+      <section id="view-game" class="view">
+        <div class="game-screen-wrapper">
+          <canvas id="game-canvas" width="640" height="448"></canvas>
+          <div class="game-overlay" id="game-overlay">
+            <p id="game-status">Aucun jeu en cours</p>
+            <button id="btn-stop-game" class="action-btn">Arrêter</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Virtual Gamepad (always available, toggled) -->
+    <div id="gamepad" class="gamepad hidden">
+      <!-- Left side: D-pad + Left stick -->
+      <div class="gp-left">
+        <div class="stick-zone" id="stick-left">
+          <div class="stick-base">
+            <div class="stick-knob" id="knob-left"></div>
+          </div>
+          <span class="stick-label">L</span>
+        </div>
+        <div class="dpad" id="dpad">
+          <button class="dpad-btn up" data-btn="up">▲</button>
+          <button class="dpad-btn left" data-btn="left">◀</button>
+          <button class="dpad-btn right" data-btn="right">▶</button>
+          <button class="dpad-btn down" data-btn="down">▼</button>
+        </div>
+      </div>
+
+      <!-- Center buttons -->
+      <div class="gp-center">
+        <button class="sys-btn" data-btn="share">Share</button>
+        <button class="sys-btn" data-btn="options">Options</button>
+        <button class="sys-btn home" data-btn="home">PS</button>
+      </div>
+
+      <!-- Right side: Face buttons + Right stick -->
+      <div class="gp-right">
+        <div class="face-btns">
+          <button class="face-btn triangle" data-btn="triangle">△</button>
+          <button class="face-btn circle" data-btn="circle">○</button>
+          <button class="face-btn cross" data-btn="cross">×</button>
+          <button class="face-btn square" data-btn="square">□</button>
+        </div>
+        <div class="stick-zone" id="stick-right">
+          <div class="stick-base">
+            <div class="stick-knob" id="knob-right"></div>
+          </div>
+          <span class="stick-label">R</span>
+        </div>
+      </div>
+
+      <!-- Shoulder buttons -->
+      <div class="shoulders">
+        <button class="shoulder l2" data-btn="l2">L2</button>
+        <button class="shoulder l1" data-btn="l1">L1</button>
+        <button class="shoulder r1" data-btn="r1">R1</button>
+        <button class="shoulder r2" data-btn="r2">R2</button>
+      </div>
+    </div>
+
+    <!-- Floating toggle for gamepad -->
+    <button id="toggle-gamepad" class="fab" title="Afficher/Masquer manette">🎮</button>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/core-interface.js"></script>
+  <script src="js/gamepad.js"></script>
+  <script src="js/file-loader.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
