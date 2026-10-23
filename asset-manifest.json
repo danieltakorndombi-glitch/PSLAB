@@ -1,5 +1,5 @@
 {
-  "version": "2e4923d586fb",
+  "version": "cf7ece3adc31",
   "shell": [
     "./",
     "index.html",
@@ -20,6 +20,7 @@
     "plugin-renderer-webgpu.js",
     "plugin-renderer-canvas2d.js",
     "plugin-core-demo.js",
-    "plugin-core-ps1-wasm.js"
+    "plugin-core-ps1-wasm.js",
+    "plugin-core-psp-ejs.js"
   ]
 }

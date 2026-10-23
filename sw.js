@@ -38,6 +38,8 @@ const SHELL_PREFIX = 'ps-shell-';
 const RUNTIME = 'ps-runtime-v1';
 const WASM = 'ps-wasm-v1';
 const META = 'ps-meta-v1';
+const CDN = 'ps-cdn-v1';                                   // fichiers EmulatorJS (moteur PSP) mis en cache pour le hors-ligne
+const CDN_HOSTS = ['cdn.emulatorjs.org'];
 const CHECK_EVERY_MS = 60 * 1000;
 
 const SCOPE = self.registration.scope;                       // ex. https://user.github.io/repo/
@@ -167,7 +169,7 @@ self.addEventListener('activate', (event) => {
     const ptr = await readPointer();
     for (const k of await caches.keys()) {
       const ours = k.startsWith('ps-');
-      const live = k === RUNTIME || k === WASM || k === META || (ptr && k === ptr.cache);
+      const live = k === RUNTIME || k === WASM || k === META || k === CDN || (ptr && k === ptr.cache);
       if (ours && !live && !k.startsWith(SHELL_PREFIX)) await caches.delete(k);
     }
     await self.clients.claim();
@@ -238,6 +240,24 @@ async function cacheFirst(req, cacheName) {
   return res;
 }
 
+/* CDN d'EmulatorJS : récupéré en mode CORS, servi avec CORP (exigé par l'isolation COEP), mis en cache */
+async function cdnFetch(req) {
+  const cache = await caches.open(CDN);
+  const hit = await cache.match(req.url);
+  if (hit) return hit;
+  try {
+    const res = await fetch(req.url, { mode: 'cors', credentials: 'omit' });
+    if (!res.ok) return res;
+    const h = new Headers(res.headers);
+    h.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    const out = new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
+    try { await cache.put(req.url, out.clone()); } catch (e) { /* quota */ }
+    return out;
+  } catch (e) {
+    return fetch(req);                                // repli : requête d'origine (peut échouer hors-ligne)
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /*  Routage                                                           */
 /* ------------------------------------------------------------------ */
@@ -245,6 +265,7 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  if (CDN_HOSTS.includes(url.hostname) && !req.headers.has('range')) { event.respondWith(cdnFetch(req)); return; }
   if (url.origin !== self.location.origin || !url.pathname.startsWith(SCOPE_PATH)) return;  // externe : navigateur
   if (req.headers.has('range')) return;                                                    // flux média : navigateur
 

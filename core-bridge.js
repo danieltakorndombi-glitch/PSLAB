@@ -185,7 +185,7 @@
       const candidates = PS.registry.resolveCores({ ext: handle.ext, name: handle.name }, preferred);
       if (!candidates.length) { this._setState('idle'); throw new Error('Aucun moteur compatible avec ce format'); }
 
-      let lastErr = null;
+      let lastErr = null, firstReal = null;
       for (let i = 0; i < candidates.length; i++) {
         const desc = candidates[i];
         try {
@@ -196,11 +196,12 @@
           this.core = core; this.activeDesc = desc;
           this._applyToRenderers();
           this._setState('ready');
-          if (i > 0 && window.appUI) window.appUI.toast(`Moteur « ${candidates[0].name} » indisponible → ${desc.name}`, '');
+          if (firstReal && window.appUI) window.appUI.toast(`${firstReal.name} : ${firstReal.msg} → ${desc.name}`, '');
           console.log('[Core] Moteur actif :', desc.id, desc.version);
           return true;
         } catch (e) {
           lastErr = e;
+          if (!firstReal && !(e && e.skip)) firstReal = { name: desc.name, msg: (e && e.message) || 'indisponible' };
           console.warn(`[Core] ${desc.id} a échoué :`, e && e.message ? e.message : e);
           await this._teardown();        // nettoie rendu / boucles / canvas partiellement utilisés
           this.rom = handle; this.currentRom = ref;
