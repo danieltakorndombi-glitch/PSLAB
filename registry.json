@@ -5,7 +5,7 @@
     { "id": "webgpu",   "kind": "renderer", "name": "WebGPU",    "version": "1.0.0", "url": "plugin-renderer-webgpu.js",   "priority": 50,   "requires": { "webgpu": true } },
     { "id": "canvas2d", "kind": "renderer", "name": "Canvas 2D", "version": "1.0.0", "url": "plugin-renderer-canvas2d.js", "priority": -100, "requires": {} },
 
-    { "id": "psp-ejs", "kind": "core", "name": "PSP (PPSSPP)", "version": "1.0.2",
+    { "id": "psp-ejs", "kind": "core", "name": "PSP (PPSSPP)", "version": "1.0.3",
       "url": "plugin-core-psp-ejs.js", "systems": ["psp"], "extensions": [".iso", ".cso", ".pbp"],
       "priority": 200, "requires": { "wasm": true },
       "options": { "dataUrl": "https://cdn.emulatorjs.org/stable/data/", "maxMB": 1536 } },
@@ -18,7 +18,7 @@
       "requires": { "wasm": true },
       "options": { "glue": "ps1.js", "esm": true, "maxMemfsMB": 640 } },
 
-    { "id": "demo", "kind": "core", "name": "Diagnostic (sans WASM)", "version": "1.0.0",
+    { "id": "demo", "kind": "core", "name": "Diagnostic (sans WASM)", "version": "1.0.1",
       "url": "plugin-core-demo.js",
       "systems": ["any"], "extensions": [], "priority": -100, "requires": { "webgl": true } }
   ]

@@ -49,6 +49,17 @@ async function isPspIso(rom) {
   return find(head, 'PSP_GAME') >= 0;
 }
 
+/** Trace d'avancement : écrite dans localStorage, relue au démarrage suivant de l'appli.
+ *  Si la page est fermée par l'iPhone pendant le chargement, on saura à quelle étape. */
+const TRACE_KEY = 'ps-psp-trace';
+function trace(patch) {
+  try {
+    const cur = JSON.parse(localStorage.getItem(TRACE_KEY) || '{}');
+    localStorage.setItem(TRACE_KEY, JSON.stringify(Object.assign(cur, patch, { at: Date.now() })));
+  } catch (e) {}
+}
+function clearTrace() { try { localStorage.removeItem(TRACE_KEY); } catch (e) {} }
+
 class PspEjsCore {
   constructor(ctx) {
     this.ctx = ctx;
@@ -106,23 +117,36 @@ class PspEjsCore {
     Object.assign(window, {
       EJS_player: '#ejs-psp-player', EJS_core: 'psp', EJS_gameUrl: this.blobUrl, EJS_gameName: rom.name,
       EJS_pathtodata: data, EJS_threads: true, EJS_startOnLoaded: true, EJS_language: 'fr',
-      EJS_onGameStart: () => { this._resolveStart(true); }
+      EJS_onGameStart: () => { clearTrace(); this.observer && this.observer.disconnect(); this._resolveStart(true); }
     });
     window.__psEjsUsed = true;
+
+    trace({ stage: 'moteur', mb: Math.round(mb), status: '' });
+    // On note le dernier texte d'avancement affiché par EmulatorJS (« Decompress Game Core 99% »…)
+    let lastWrite = 0;
+    this.observer = new MutationObserver(() => {
+      const now = Date.now();
+      if (now - lastWrite < 400) return;
+      lastWrite = now;
+      const el = this.host && (this.host.querySelector('.ejs_loading_text') || this.host);
+      const txt = el && (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 70);
+      if (txt) trace({ status: txt });
+    });
+    this.observer.observe(this.host, { subtree: true, childList: true, characterData: true });
 
     if (window.appUI) window.appUI.toast('Chargement du moteur PSP (1re fois : plusieurs Mo)…');
     await new Promise((resolve, reject) => {
       const s = document.createElement('script');
       s.src = data + 'loader.js';
-      s.onload = resolve;
-      s.onerror = () => reject(new Error('EmulatorJS injoignable (connexion nécessaire la 1re fois)'));
+      s.onload = () => { trace({ stage: 'jeu' }); resolve(); };
+      s.onerror = () => { clearTrace(); reject(new Error('EmulatorJS injoignable (connexion nécessaire la 1re fois)')); };
       document.head.appendChild(s);
       this.script = s;
     });
   }
 
   async start() {
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('le moteur PSP ne démarre pas (délai dépassé)')), this.opts.startTimeoutMs));
+    const timeout = new Promise((_, rej) => setTimeout(() => { clearTrace(); rej(new Error('le moteur PSP ne démarre pas (délai dépassé)')); }, this.opts.startTimeoutMs));
     await Promise.race([this.started, timeout]);
   }
 
@@ -143,6 +167,7 @@ class PspEjsCore {
   stop() { this.pause(); }
 
   dispose() {
+    clearTrace(); this.observer && this.observer.disconnect();
     try { const e = this.emu; e && e.callEvent && e.callEvent('exit'); } catch (x) {}
     this.host && this.host.remove();
     this.style && this.style.remove();

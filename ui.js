@@ -50,7 +50,7 @@ class AppUI {
     }
   }
 
-  toast(message, type = '') {
+  toast(message, type = '', ms = 2800) {
     const el = document.getElementById('toast');
     if (!el) return;
     el.textContent = message;
@@ -59,7 +59,7 @@ class AppUI {
     clearTimeout(this._toastTimer);
     this._toastTimer = setTimeout(() => {
       el.classList.add('hidden');
-    }, 2800);
+    }, ms);
   }
 
   bindSettings() {

@@ -165,6 +165,8 @@ class DemoCore {
     stick(W / 2 - 34, 202, inp.axes[0], inp.axes[1]);
     stick(W / 2 + 34, 202, inp.axes[2], inp.axes[3]);
 
+    g.fillStyle = '#5e6690'; g.font = '8px monospace'; g.textAlign = 'right'; g.fillText('diag v2', W - 8, 134); g.textAlign = 'left';
+
     // compteur de trames + FPS
     g.fillStyle = '#5e6690'; g.font = '9px monospace';
     g.fillText(`trame ${f}`, 8, H - 8);

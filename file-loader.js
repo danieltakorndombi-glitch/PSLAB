@@ -66,7 +66,7 @@ class FileLoader {
     if (!fileList || fileList.length === 0) return;
 
     const files = Array.from(fileList);
-    const validExt = ['.iso', '.bin', '.chd', '.pkg', '.cso', '.img'];
+    const validExt = ['.iso', '.bin', '.chd', '.pkg', '.cso', '.img', '.pbp'];
 
     for (const file of files) {
       const ext = '.' + file.name.split('.').pop().toLowerCase();

@@ -135,6 +135,19 @@
       this._bindLifecycle();
       this.isReady = true;
 
+      // Un lancement PSP s'est-il interrompu brutalement (page fermée par l'iPhone) ?
+      try {
+        const raw = localStorage.getItem('ps-psp-trace');
+        if (raw) {
+          localStorage.removeItem('ps-psp-trace');
+          const t = JSON.parse(raw);
+          const etape = t.stage === 'moteur' ? 'pendant le chargement du moteur' : 'pendant le chargement du moteur / du jeu';
+          const vu = t.status ? ` Dernier texte vu : « ${t.status} ».` : '';
+          console.warn('[Core] lancement PSP interrompu', t);
+          setTimeout(() => window.appUI && window.appUI.toast(`Le dernier lancement PSP s’est interrompu ${etape} (jeu de ${t.mb || '?'} Mo) : page fermée par l’iPhone, sûrement faute de mémoire.${vu}`, 'error', 15000), 3500);
+        }
+      } catch (e) {}
+
       // Préchargement silencieux du code (pas du WASM) pour un démarrage instantané + cache hors-ligne
       const idle = window.requestIdleCallback || (fn => setTimeout(fn, 600));
       idle(() => {
