@@ -107,6 +107,7 @@
     _listeners: {},
     _autoPaused: false,
     _stopPromise: null,
+    _fallbackNotes: [],       // pourquoi les moteurs précédents ont échoué (affiché par le moteur de diagnostic)
 
     /* ----- événements simples ----- */
     on(evt, fn) { (this._listeners[evt] = this._listeners[evt] || new Set()).add(fn); return () => this._listeners[evt].delete(fn); },
@@ -169,6 +170,7 @@
       if (this._stopPromise) await this._stopPromise;
       await this._teardown();
       this._setState('loading');
+      this._fallbackNotes = [];
 
       let handle;
       try {
@@ -201,6 +203,7 @@
           return true;
         } catch (e) {
           lastErr = e;
+          this._fallbackNotes.push({ id: desc.id, name: desc.name, msg: (e && e.message) || 'indisponible', skip: !!(e && e.skip) });
           if (!firstReal && !(e && e.skip)) firstReal = { name: desc.name, msg: (e && e.message) || 'indisponible' };
           console.warn(`[Core] ${desc.id} a échoué :`, e && e.message ? e.message : e);
           await this._teardown();        // nettoie rendu / boucles / canvas partiellement utilisés
@@ -290,6 +293,7 @@
         caps: host.caps,
         settings: Object.assign({}, host.settings),
         descriptor: desc,
+        get fallbackNotes() { return host._fallbackNotes.slice(); },
         storage: PS.storage,
         BUTTONS, AXES,
         input: {

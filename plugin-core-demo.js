@@ -116,9 +116,25 @@ class DemoCore {
     ].filter(Boolean);
     lines.forEach((l, k) => g.fillText(l, 8, 36 + k * 13));
 
-    g.fillStyle = '#8c93b8';
-    g.fillText('Installe un cœur dans plugins/cores/ et déclare-le', 8, 112);
-    g.fillText('dans registry.json pour émuler pour de vrai.', 8, 124);
+    const notes = (this.ctx.fallbackNotes || []).filter(n => !n.skip);
+    if (notes.length) {
+      // Pourquoi le vrai moteur n'a pas démarré (visible sur une capture d'écran)
+      g.font = '9px monospace'; g.fillStyle = '#ffb454';
+      const txt = `${notes[0].name} : ${notes[0].msg}`;
+      const rows = [];
+      let cur = '';
+      txt.split(' ').forEach(w => { if ((cur + ' ' + w).trim().length > 54) { rows.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); });
+      if (cur) rows.push(cur);
+      rows.slice(0, 3).forEach((l, k) => g.fillText(rows.length > 3 && k === 2 ? l.slice(0, 51) + '…' : l, 8, 102 + k * 11));
+    } else {
+      g.fillStyle = '#8c93b8';
+      g.fillText('Installe un cœur dans plugins/cores/ et déclare-le', 8, 112);
+      g.fillText('dans registry.json pour émuler pour de vrai.', 8, 124);
+    }
+    // État de l'environnement
+    const sw = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
+    g.font = '8px monospace'; g.fillStyle = '#5e6690';
+    g.fillText(`isolation ${window.crossOriginIsolated ? 'oui' : 'NON'} · SAB ${typeof SharedArrayBuffer !== 'undefined' ? 'oui' : 'NON'} · SW ${sw ? 'oui' : 'NON'}`, 8, 134);
 
     // ---------- manette ----------
     const lit = idx => inp.buttons[idx] > 0;

@@ -31,10 +31,28 @@ const find = (u8, text) => {
   return -1;
 };
 
+/** Un ISO PSP contient le dossier racine « PSP_GAME » : on lit le vrai répertoire racine (ISO 9660),
+ *  sans dépendre de sa position dans le fichier. Retourne true / false. */
+async function isPspIso(rom) {
+  try {
+    const pvd = await rom.readRange(16 * 2048, 2048);
+    if (pvd.length >= 190 && String.fromCharCode(...pvd.subarray(1, 6)) === 'CD001') {
+      const dv = new DataView(pvd.buffer, pvd.byteOffset, pvd.byteLength);
+      const lba = dv.getUint32(156 + 2, true), len = dv.getUint32(156 + 10, true);   // enregistrement du répertoire racine
+      if (lba > 0 && len > 0 && len <= 1024 * 1024) {
+        const dir = await rom.readRange(lba * 2048, len);
+        if (find(dir, 'PSP_GAME') >= 0) return true;
+      }
+    }
+  } catch (e) { /* on retombe sur la recherche simple */ }
+  const head = await rom.readRange(0, 2 * 1024 * 1024);
+  return find(head, 'PSP_GAME') >= 0;
+}
+
 class PspEjsCore {
   constructor(ctx) {
     this.ctx = ctx;
-    this.opts = Object.assign({ dataUrl: DEFAULT_DATA, startTimeoutMs: 120000 }, (ctx.descriptor && ctx.descriptor.options) || {});
+    this.opts = Object.assign({ dataUrl: DEFAULT_DATA, startTimeoutMs: 120000, maxMB: 1536 }, (ctx.descriptor && ctx.descriptor.options) || {});
     this.started = null;
   }
 
@@ -43,15 +61,25 @@ class PspEjsCore {
   async load(rom) {
     // 1) Seulement les jeux PSP (un .iso peut aussi être PS1/PS2)
     if (rom.ext === '.iso') {
-      const head = await rom.readRange(0, 512 * 1024);
-      if (find(head, 'PSP_GAME') < 0) { const e = new Error('ce fichier n’est pas un jeu PSP'); e.skip = true; throw e; }   // skip : pas une vraie erreur, un autre moteur prend le relais
+      if (!(await isPspIso(rom))) { const e = new Error('ce fichier n’est pas un jeu PSP'); e.skip = true; throw e; }   // skip : pas une vraie erreur, un autre moteur prend le relais
     } else if (!['.cso', '.pbp'].includes(rom.ext)) {
       const e = new Error('format non géré par le moteur PSP'); e.skip = true; throw e;
     }
+
+    // Vérifications de l'environnement : on les cumule pour tout afficher d'un coup
+    const problems = [];
     if (!window.crossOriginIsolated) {
-      throw new Error('isolation absente : rechargez la page une fois, puis relancez le jeu');
+      const sw = navigator.serviceWorker && navigator.serviceWorker.controller;
+      problems.push(sw
+        ? 'isolation refusée par Safari malgré le Service Worker'
+        : 'isolation absente : rechargez la page 2 fois');
     }
-    if (window.__psEjsUsed) throw new Error('rechargez la page avant de relancer un jeu PSP');
+    const mb = rom.size / 1048576;
+    if (this.opts.maxMB > 0 && mb > this.opts.maxMB) {
+      problems.push(`jeu trop gros (${mb.toFixed(0)} Mo > ${this.opts.maxMB} Mo max) : risque de fermeture par l’iPhone`);
+    }
+    if (window.__psEjsUsed) problems.push('rechargez la page avant de relancer un jeu PSP');
+    if (problems.length) throw new Error(problems.join(' ; '));
 
     // 2) Conteneur dans l'écran de jeu existant (aucun élément du HTML n'est modifié)
     const wrap = document.querySelector('.game-screen-wrapper');
