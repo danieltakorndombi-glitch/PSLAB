@@ -1,3 +1,4 @@
+/* ===== ui.js ===== */
 /**
  * UI Controller – navigation entre vues + toasts + stats
  */
@@ -43,8 +44,8 @@ class AppUI {
       this.currentView = name;
     }
 
-    // Si on quitte le jeu, on arrête
-    if (name !== 'game' && window.EmulatorCore.isRunning) {
+    // Si on quitte le jeu, on arrête (et on libère le moteur, même s'il était en pause)
+    if (name !== 'game' && (window.EmulatorCore.isRunning || window.EmulatorCore.state === 'paused')) {
       window.EmulatorCore.stop();
     }
   }
@@ -67,6 +68,7 @@ class AppUI {
     const filter = document.getElementById('setting-filter');
     const sensitivity = document.getElementById('setting-sensitivity');
     const haptic = document.getElementById('setting-haptic');
+    const showFps = document.getElementById('setting-show-fps');
 
     const apply = () => {
       const settings = {
@@ -74,17 +76,21 @@ class AppUI {
         frameskip: parseInt(frameskip?.value || 0, 10),
         filter: filter?.value || 'none',
         sensitivity: parseFloat(sensitivity?.value || 1),
-        haptic: haptic?.checked ?? true
+        haptic: haptic?.checked ?? true,
+        showFps: showFps?.checked ?? true
       };
       window.EmulatorCore.applySettings(settings);
       window.virtualGamepad.setSensitivity(settings.sensitivity);
       window.virtualGamepad.setHaptic(settings.haptic);
     };
 
-    [scale, frameskip, filter, sensitivity, haptic].forEach(el => {
+    [scale, frameskip, filter, sensitivity, haptic, showFps].forEach(el => {
       el?.addEventListener('change', apply);
       el?.addEventListener('input', apply);
     });
+
+    // Transmet une première fois les valeurs affichées au moteur (échelle, filtre…)
+    apply();
   }
 
   renderSampleGames() {

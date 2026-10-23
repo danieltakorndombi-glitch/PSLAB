@@ -1,3 +1,4 @@
+/* ===== gamepad.js ===== */
 /**
  * Manette virtuelle plein écran – vrais boutons, repositionnables.
  * Positions en % de l'écran, mémorisées séparément en paysage / portrait.

@@ -1,0 +1,25 @@
+{
+  "version": "2e4923d586fb",
+  "shell": [
+    "./",
+    "index.html",
+    "manifest.webmanifest",
+    "icon-192.png",
+    "icon-512.png",
+    "registry.js",
+    "storage.js",
+    "core-bridge.js",
+    "gamepad.js",
+    "file-loader.js",
+    "ui.js",
+    "app.js"
+  ],
+  "precache": [
+    "registry.json",
+    "plugin-renderer-webgl2.js",
+    "plugin-renderer-webgpu.js",
+    "plugin-renderer-canvas2d.js",
+    "plugin-core-demo.js",
+    "plugin-core-ps1-wasm.js"
+  ]
+}

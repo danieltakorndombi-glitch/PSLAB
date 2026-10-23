@@ -1,12 +1,19 @@
+/* ===== file-loader.js ===== */
 /**
- * File Loader – prêt pour un vrai moteur
- * Gère drag & drop + input file
- * Appelle EmulatorCore.loadRom() quand un fichier est sélectionné
+ * File Loader – drag & drop + sélecteur de fichiers
+ *
+ * Les jeux (ISO / BIN / CHD…) sont copiés EN FLUX dans le stockage persistant
+ * du navigateur (OPFS, sinon IndexedDB) : jamais chargés en entier dans la RAM,
+ * et toujours disponibles au prochain lancement, même hors-ligne.
+ * Le moteur d'émulation n'est démarré qu'au clic sur « Jouer ».
+ *
+ * Supprimer un jeu : appui long (ou clic droit) sur sa ligne.
  */
 
 class FileLoader {
   constructor() {
-    this.loadedFiles = [];
+    this.loadedFiles = [];      // métadonnées {id, name, size, ext, …} issues de PS.storage
+    this._busy = false;
   }
 
   init() {
@@ -15,6 +22,11 @@ class FileLoader {
     const btnLoad = document.getElementById('btn-load-rom');
 
     if (!dropZone || !fileInput) return;
+
+    // Jeux déjà présents dans le stockage persistant
+    this.loadedFiles = window.PS.storage.list();
+    this.renderLibrary();
+    this.bindDelete();
 
     // Clic sur la zone → ouvre le sélecteur
     dropZone.addEventListener('click', () => fileInput.click());
@@ -63,23 +75,25 @@ class FileLoader {
         continue;
       }
 
-      // Ajouter à la liste visuelle immédiatement
-      this.addToLibrary(file);
-
-      // Charger dans le core (simulation pour l’instant)
       try {
-        window.appUI.toast(`Chargement de ${file.name}…`);
-        await window.EmulatorCore.loadRom(file);
+        window.appUI.toast(`Copie de ${file.name}…`);
+        let last = -1;
+        const meta = await window.PS.storage.import(file, (p) => {
+          const pct = Math.floor(p * 10) * 10;                    // un toast tous les 10 %
+          if (pct !== last && pct > 0 && pct < 100) { last = pct; window.appUI.toast(`Copie de ${file.name}… ${pct}%`); }
+        });
+        this.addToLibrary(meta);
         window.appUI.toast(`${file.name} prêt`, 'success');
       } catch (err) {
         console.error(err);
-        window.appUI.toast(`Erreur lors du chargement de ${file.name}`, 'error');
+        window.appUI.toast(err && err.message ? err.message : `Erreur lors du chargement de ${file.name}`, 'error');
       }
     }
   }
 
-  addToLibrary(file) {
-    this.loadedFiles.push(file);
+  addToLibrary(meta) {
+    this.loadedFiles = this.loadedFiles.filter(m => m.id !== meta.id);
+    this.loadedFiles.push(meta);
     this.renderLibrary();
   }
 
@@ -117,24 +131,75 @@ class FileLoader {
     });
   }
 
-  async playFile(file) {
+  /** Appui long / clic droit sur un jeu → suppression du stockage (aucun élément visuel ajouté). */
+  bindDelete() {
+    const container = document.getElementById('loaded-games');
+    if (!container || container._delBound) return;
+    container._delBound = true;
+
+    const targetOf = (e) => {
+      const item = e.target.closest('.game-item');
+      const btn = item && item.querySelector('.btn-play');
+      return btn ? this.loadedFiles[parseInt(btn.dataset.idx, 10)] : null;
+    };
+
+    container.addEventListener('contextmenu', (e) => {
+      const meta = targetOf(e);
+      if (!meta) return;
+      e.preventDefault();
+      this.confirmRemove(meta);
+    });
+
+    let timer = null, fired = false;
+    const cancel = () => { clearTimeout(timer); timer = null; };
+    container.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' || e.target.closest('.btn-play')) return;
+      const meta = targetOf(e);
+      if (!meta) return;
+      fired = false;
+      timer = setTimeout(() => { fired = true; this.confirmRemove(meta); }, 700);
+    });
+    ['pointerup', 'pointercancel', 'pointermove', 'pointerleave'].forEach(t => container.addEventListener(t, cancel));
+  }
+
+  async confirmRemove(meta) {
+    if (!window.confirm(`Supprimer « ${meta.name} » du stockage de l’appareil ?`)) return;
     try {
-      window.appUI.toast(`Démarrage de ${file.name}…`);
-      await window.EmulatorCore.loadRom(file);
+      await window.PS.storage.remove(meta.id);
+      this.loadedFiles = this.loadedFiles.filter(m => m.id !== meta.id);
+      this.renderLibrary();
+      window.appUI.toast(`${meta.name} supprimé`, 'success');
+    } catch (err) {
+      window.appUI.toast('Suppression impossible', 'error');
+    }
+  }
+
+  async playFile(meta) {
+    if (this._busy) return;
+    this._busy = true;
+    try {
+      window.appUI.toast(`Démarrage de ${meta.name}…`);
+      await window.EmulatorCore.loadRom(meta);
+
+      // La vue jeu doit être visible AVANT le démarrage (le moteur dessine sur le canvas)
+      window.appUI.showView('game');
       await window.EmulatorCore.start();
 
-      // Afficher la vue jeu
-      window.appUI.showView('game');
       document.getElementById('game-overlay').classList.add('hidden');
-      document.getElementById('game-status').textContent = file.name;
+      document.getElementById('game-status').textContent = meta.name;
 
       // Afficher la manette automatiquement
       window.virtualGamepad.show();
 
-      window.appUI.toast(`${file.name} en cours (simulation)`, 'success');
+      const engine = window.EmulatorCore.activeDesc;
+      window.appUI.toast(`${meta.name} en cours${engine ? ' · ' + engine.name : ''}`, 'success');
     } catch (err) {
       console.error(err);
+      try { await window.EmulatorCore.stop(); } catch (e) {}
+      window.appUI.showView('library');
       window.appUI.toast(err.message || 'Impossible de démarrer le jeu', 'error');
+    } finally {
+      this._busy = false;
     }
   }
 

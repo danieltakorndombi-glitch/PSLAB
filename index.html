@@ -6,15 +6,574 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0a0a0f" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <meta name="description" content="Prototype d'émulateur PlayStation (PS2/PS4) optimisé iOS – interface prête pour un vrai moteur WASM" />
   <title>PS Web Emulator</title>
 
   <!-- PWA -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="data:image/png;base64,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" />
 
-  <!-- Lien corrigé vers le CSS à la racine -->
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+/* ========== RESET & BASE ========== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface-2: #1a1a25;
+  --border: #2a2a3a;
+  --text: #e8e8f0;
+  --text-muted: #8888a0;
+  --accent: #0070d1;          /* PS blue */
+  --accent-glow: #00a0ff;
+  --success: #00c853;
+  --danger: #ff3b5c;
+  --radius: 12px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hidden { display: none !important; }
+
+/* ========== BOOT SCREEN ========== */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.6s ease;
+}
+
+.boot-logo {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.ps-symbol {
+  font-size: 64px;
+  color: var(--accent);
+  text-shadow: 0 0 30px var(--accent-glow);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.boot-logo h1 {
+  font-size: 28px;
+  letter-spacing: 8px;
+  font-weight: 300;
+  margin-top: 8px;
+}
+
+.boot-subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+.boot-progress {
+  width: 200px;
+  height: 3px;
+  background: #222;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.boot-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+  transition: width 0.3s ease;
+}
+
+.boot-status {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+/* ========== APP LAYOUT ========== */
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ps-logo {
+  color: var(--accent);
+  font-size: 22px;
+}
+
+.header-title {
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.header-right {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:active {
+  background: var(--accent);
+}
+
+/* ========== MAIN VIEWS ========== */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px 16px;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.welcome h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.welcome p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #005bb5, var(--accent));
+  border-color: transparent;
+}
+
+.action-btn:active {
+  transform: scale(0.97);
+}
+
+.action-icon {
+  font-size: 28px;
+}
+
+/* Performance panel */
+.perf-panel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+}
+
+.perf-panel h3 {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.perf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.perf-item span {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.perf-item strong {
+  font-size: 16px;
+  color: var(--accent-glow);
+}
+
+.perf-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 12px;
+  opacity: 0.7;
+}
+
+/* Library / Games */
+.library-section h3,
+#view-library h2,
+#view-settings h2 {
+  font-size: 16px;
+  margin-bottom: 14px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.game-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.game-card:active {
+  transform: scale(0.97);
+}
+
+.game-card-cover {
+  height: 90px;
+  background: linear-gradient(135deg, #1a1a30, #0d0d18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+}
+
+.game-card-info {
+  padding: 10px;
+}
+
+.game-card-title {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-card-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 40px 20px;
+  text-align: center;
+  margin-bottom: 24px;
+  background: var(--surface);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.drop-zone.dragover {
+  border-color: var(--accent);
+  background: rgba(0, 112, 209, 0.08);
+}
+
+.drop-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.drop-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.loaded-games .empty-msg {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 20px;
+}
+
+.game-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--surface);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+}
+
+.game-item-icon {
+  font-size: 28px;
+}
+
+.game-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-item-name {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-item-size {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.game-item-actions button {
+  background: var(--accent);
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Settings */
+.settings-group {
+  margin-bottom: 20px;
+}
+
+.settings-group label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+}
+
+.settings-group select,
+.settings-group input[type="range"] {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.settings-group input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+.settings-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 24px;
+  line-height: 1.5;
+}
+
+/* Game view */
+.game-screen-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 640 / 448;
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #111;
+}
+
+.game-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.75);
+  gap: 16px;
+}
+
+.game-overlay.hidden {
+  display: none;
+}
+
+/* ========== MANETTE (vrais boutons 3D) ========== */
+.gamepad { position: fixed; inset: 0; z-index: 60; pointer-events: none; touch-action: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.gamepad.editing { pointer-events: auto; background-color: rgba(5,5,12,.6);
+  background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 40px 40px; }
+.ctl { position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%);
+  transform: translate(-50%, -50%) scale(var(--s, 1)); pointer-events: auto; touch-action: none; }
+.gamepad.editing .ctl { outline: 2px dashed rgba(0,160,255,.9); outline-offset: 6px; border-radius: 14px; }
+.gamepad.editing .ctl.sel { outline: 2px solid #ffd54a; }
+.gamepad.editing .ctl * { pointer-events: none; }
+
+.key { position: relative; border: 0; padding: 0; color: #e9ecf5; display: flex; align-items: center; justify-content: center;
+  font: 700 15px/1 -apple-system, system-ui, sans-serif; touch-action: none; -webkit-tap-highlight-color: transparent;
+  background: radial-gradient(circle at 35% 22%, #5d6277 0, #35394c 45%, #1b1d2a 100%);
+  box-shadow: 0 5px 0 #0a0b12, 0 9px 12px rgba(0,0,0,.55), inset 0 1px 1px rgba(255,255,255,.4), inset 0 -2px 4px rgba(0,0,0,.5);
+  transition: transform .05s, box-shadow .05s, filter .05s; }
+.key.active { transform: translateY(4px); filter: brightness(1.3);
+  box-shadow: 0 1px 0 #0a0b12, 0 2px 4px rgba(0,0,0,.6), inset 0 2px 6px rgba(0,0,0,.6); }
+.shoulder { width: 84px; height: 42px; border-radius: 14px 14px 8px 8px; letter-spacing: 1px; }
+.sys { width: 68px; height: 30px; border-radius: 15px; font-size: 11px; }
+.sys.home { background: radial-gradient(circle at 35% 22%, #2d8cff, #0070d1 55%, #003f80); }
+
+.face { width: 124px; height: 124px; }
+.face .key { position: absolute; width: 50px; height: 50px; border-radius: 50%; }
+.face .triangle { left: 37px; top: 0; } .face .square { left: 0; top: 37px; }
+.face .circle { right: 0; top: 37px; } .face .cross { left: 37px; bottom: 0; }
+.face svg { width: 26px; height: 26px; fill: none; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.dpad { width: 132px; height: 132px; }
+.dpad::before { content: ""; position: absolute; left: 44px; top: 44px; width: 44px; height: 44px; background: #14151f; border-radius: 6px; }
+.dpad .key { position: absolute; width: 44px; height: 44px; border-radius: 10px; }
+.dpad .up { left: 44px; top: 0; } .dpad .left { left: 0; top: 44px; }
+.dpad .right { right: 0; top: 44px; } .dpad .down { left: 44px; bottom: 0; }
+.dpad svg { width: 20px; height: 20px; fill: #d7dbea; }
+.dpad .left svg { transform: rotate(-90deg); } .dpad .right svg { transform: rotate(90deg); } .dpad .down svg { transform: rotate(180deg); }
+
+.stick { width: 104px; height: 104px; border-radius: 50%;
+  background: radial-gradient(circle, #0d0e16 55%, #1f2233 100%);
+  box-shadow: inset 0 4px 10px rgba(0,0,0,.8), 0 0 0 3px #2c3042, 0 6px 10px rgba(0,0,0,.5); }
+.stick .knob { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 35% 22%, #70758d, #2b2e40 60%, #161824);
+  box-shadow: 0 4px 0 #090a10, 0 7px 10px rgba(0,0,0,.6), inset 0 1px 1px rgba(255,255,255,.4); }
+.stick .knob.active { filter: brightness(1.35); }
+
+.gp-bar { position: absolute; top: calc(8px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%);
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; max-width: 94%; pointer-events: auto; z-index: 2; }
+.gp-tool { border: 0; border-radius: 999px; padding: 9px 14px; color: #e9ecf5; background: rgba(30,32,46,.95);
+  font: 600 13px -apple-system, system-ui, sans-serif; box-shadow: 0 3px 0 #0a0b12, inset 0 1px 1px rgba(255,255,255,.25); }
+.gp-tool:active { transform: translateY(2px); box-shadow: 0 1px 0 #0a0b12; background: var(--accent); }
+.gp-size { display: none; width: 110px; }
+.gamepad.editing .gp-size { display: block; }
+
+.fab { position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom)); z-index: 70; width: 60px; height: 60px; border: 0;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; -webkit-tap-highlight-color: transparent;
+  background: radial-gradient(circle at 35% 22%, #2d8cff, #0070d1 55%, #003f80);
+  box-shadow: 0 6px 0 #002a57, 0 10px 16px rgba(0,0,0,.55), inset 0 1px 2px rgba(255,255,255,.5); }
+.fab svg { width: 30px; height: 30px; }
+.fab:active { transform: translateY(4px); box-shadow: 0 2px 0 #002a57, 0 3px 6px rgba(0,0,0,.5), inset 0 2px 6px rgba(0,0,0,.4); }
+.gamepad:not(.hidden) ~ .fab { display: none; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: calc(20px + var(--safe-top));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  z-index: 2000;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  border: 1px solid var(--border);
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.success { border-color: var(--success); }
+.toast.error   { border-color: var(--danger); }
+
+
+</style>
 </head>
 <body>
   <!-- ========== BOOT / LOADING SCREEN ========== -->
@@ -191,10 +750,12 @@
   <!-- Toast notifications -->
   <div id="toast" class="toast hidden"></div>
 
-  <!-- Liens JS corrigés vers la racine -->
-  <script src="core-interface.js"></script>
+  <script src="registry.js"></script>
+  <script src="storage.js"></script>
+  <script src="core-bridge.js"></script>
   <script src="gamepad.js"></script>
   <script src="file-loader.js"></script>
+  <script src="ui.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
